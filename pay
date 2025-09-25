@@ -1,0 +1,236 @@
+from fastapi import FastAPI
+from typing import List, Dict, Any
+import httpx
+import asyncio
+import random, string
+import uuid
+from datetime import datetime
+
+def generate_fname():
+    first = ''.join(random.choices(string.ascii_lowercase, k=random.randint(5, 8)))
+    return first.capitalize()
+
+def generate_lname():
+    last = ''.join(random.choices(string.ascii_lowercase, k=random.randint(5, 8)))
+    return last.capitalize()
+
+def generate_char():
+    data = ''.join(random.choices(string.ascii_lowercase, k= random.randint(5,8)))
+
+
+
+DOMESTIC_RISK = [
+"00",
+"00",
+"01",
+"02",
+"03",
+"04",
+"05",
+"06",
+"07",
+"08",
+"10",
+"11",
+"12",
+"13",
+"14",
+"21",
+"31",
+"32",
+"33",
+"34",
+"35",
+"AA",
+"ZZ"
+]
+CROSS_BORDER_RISK= [
+"00",
+"01",
+"02",
+"03",
+"04",
+"05",
+"06",
+"07",
+"08",
+"09",
+"10",
+"11",
+"12",
+"13",
+"14",
+"21",
+"33",
+"34",
+"35",
+"ZZ"
+
+]
+INDUSTRY_CLASSIFICATION= [
+    "01",
+"02",
+"05",
+"10",
+"11",
+"12",
+"13",
+"14",
+"15",
+"16",
+"17",
+"18",
+"19",
+"20",
+"21",
+"22",
+"23",
+"24",
+"25",
+"26",
+"27",
+"28",
+"29",
+"30",
+"31",
+"32",
+"33",
+"34",
+"35",
+"36",
+"37",
+"40",
+"41",
+"45",
+"50",
+"51",
+"52",
+"55",
+"60",
+"61",
+"62",
+"63",
+"64",
+"65",
+"66",
+"67",
+"70",
+"71",
+"72",
+"73",
+"74",
+"75",
+"80",
+"85",
+"90",
+"91",
+"92",
+"93",
+"94",
+"99"
+
+]
+BUSINESS_SECTOR_CODE= [
+
+    "00900",
+"00990",
+"00160",
+"00202",
+"00204",
+"00208",
+"00999",
+"00201",
+"00203",
+"00206",
+"00210",
+"00299",
+"00301",
+"00303",
+"00970",
+"00400",
+"00500",
+"00011",
+"00100",
+"00700",
+"00170",
+"00110",
+"00209",
+"00300",
+"00600",
+"00830",
+"10001",
+"00205",
+"00302",
+"00810",
+"00200",
+"00101",
+"00207"
+
+]
+CIS_ORGANISATION_CODE =[ "46", "47", "48", "49"
+
+]
+BSR_ORGANISATION_COD= [ 
+
+]
+
+SOURCE_OF_FUNDS = [
+    "01", "02", "03", "04", "05"
+]
+
+FIRST_ID_TYPE = ["32", "38"]
+
+def generate_cif_entry() -> Dict[str, Any]:
+    return {
+
+        "SOURCE_ID" : random.choice(['']),
+        "REQUEST_TELLER_ID": random.choice(['']),
+        "REQUEST_AUTH_ID": random.choice([' ']),
+        "BRANCH_CODE": random.choice(['']),
+        "CUSTOMER_TYPE": "021703",
+        "CUSTOMER_TYPE_2", : 
+        "NAME_OF_THE_ENTITY": generate_fname(),
+        "THRESHOLD_LIMIT", 
+        "ADDRESS_LINE_1": generate_char(),
+        "ADDRESS_LINE_3": generate_char(),
+        "ISD_CODE" : random.choice(["91", "971"]),
+        "DISTRICT_CODE",
+        "SUB_DISTRICT",
+        "VILLAGE_CODE",
+        "PIN_CODE",
+        "MOBILE_NUMBER",random
+        "FIRST_ID_NUMBER", RANDOM
+        "FIRST_ID_TYPE": random.choice(FIRST_ID_TYPE)
+        "DOMESTIC_RISK",
+        "CROSS_BORDER_RISK",
+        "INDUSTRY_CLASSIFICATION",
+        "BUSINESS_SECTOR_CODE",
+        "CIS_ORGANISATION_CODE",
+        "BSR_ORGANISATION_CODE",
+        "DATE_OF_INCORPORATION_OR_FORMATION": datetime.now().strftime("%Y%m%d"),
+        "COUNTRY",
+        "STATE",
+        "CITY_CODE",
+•	     "CUSTOMER_EVALUATION_REQUIRED": random.choice(["Y", "N"]),
+        "CONSENT_FOR_DATA_SHARING" : random.choice(["Y" , "N"]),
+        "FORM60_OR_PAN" : “N”,
+        "CONSENT_DATE": datetime.now().strftime("%Y%m%d"),
+        "TURNOVER": str(random.randint(0, 90000))
+        "ANNUAL_INCOME": str(random.randint(0, 90000))
+        "PLACE_OF_INCORPORATION_OR_FORMATION", RANDOM
+        "SOURCE_OF_FUNDS"
+
+
+
+
+
+
+    }
+
+@app.post('/customers/{id}')
+def index(id:int):
+
+    if id <= 0:
+        return {"error": "must be greater than 0"}
+    customer = [generate_cif_entry() for _ in range(id)]
+    return {"count": id , "customer" : customer}
