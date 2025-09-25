@@ -1,0 +1,150 @@
+"use client";
+import { useState } from "react";
+import "./page.module.css"
+export default function MyForm() {
+  const [region, setRegion] = useState("O");
+  const [no_cif, setNo_cif] = useState(1);
+  const [acc_type, setAcc_type] = useState('PCIF');
+  const [response, setResponse] = useState([ ]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    console.log(region)
+    console.log(no_cif)
+    console.log(acc_type)
+    const url = `http://10.0.13.39:5050/create_cif/`;
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          region: region,
+          no_cif: parseInt(no_cif, 10),
+          acc_type: acc_type,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`API returned an error: ${res.status} ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      
+      setResponse(data);
+      console.log(data[0].RRN)
+      console.log(data)
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setResponse([{ res_data: JSON.stringify({ ERROR_DESCRIPTION: error.message }) }]);
+    }
+  };
+
+  const downloadCsv = () => {
+    if (!response || response.length === 0) {
+      alert("No data to download.");
+      return;
+    }
+
+    // Define CSV headers
+    const headers = ["Customer Number"];
+    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
+
+    // Process each item in the response
+    response.forEach(item => {
+      try {
+        const parsedResData = JSON.parse(item.res_data);
+        const row = [
+          parsedResData.CUSTOMER_NUMBER || '',
+          
+        ].map(field => `"${field}"`).join(","); // Wrap each field in quotes to handle commas
+        csvContent += row + "\n";
+      } catch (e) {
+        console.error("Error parsing res_data for CSV:", e);
+      }
+    });
+
+    // Create a temporary link element to trigger the download
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "cif_data.csv");
+    document.body.appendChild(link); // Required for Firefox
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <div className="container">
+      <div className="form">
+        <h1>Create CIF</h1>
+        <form onSubmit={handleSubmit}>
+          {/* Form groups */}
+          <div className="form-group">
+            <label htmlFor="region">Region:</label>
+            <select name="region" id="region" value={region} onChange={(e) => setRegion(e.target.value)} required>
+              <option value="X">X - UAT</option>
+              <option value="O">O - UAT</option>
+              <option value="Y">Y - UAT</option>
+              <option value="Z">Z - UAT</option>
+              <option value="K">K - Pre-Prod</option>
+              <option value="J">J - Pre-Prod</option>
+              <option value="R1">R1 - Pre-Prod</option>
+              <option value="Y2">Y2 - Pre-Prod</option>
+              <option value="L">L - Pre-Prod</option>
+              <option value="C">C - Pre-Prod</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="no_cif">No. of CIF:</label>
+            <input
+              type="number"
+              min="1"
+              max="10"
+              id="no_cif"
+              value={no_cif}
+              onChange={(e) => setNo_cif(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="acc_type">Account Type:</label>
+            <select name="acc_type" id="acc_type" value={acc_type} onChange={(e) => setAcc_type(e.target.value)} required>
+              <option value="PCIF">Personal CIF Creation</option>
+              <option value="NPCIF">Non-Personal CIF Creation</option>
+            </select>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+
+      <div className="cif_data_container">
+        {response && response.length > 0 ? (
+          <>
+            <button className="download" onClick={downloadCsv}>Download CSV</button>
+            {response.map((item, index) => {
+              try {
+                const parsedResData = JSON.parse(item.res_data);
+                return (
+                  <div key={index}>
+                    <p>Customer Number: {parsedResData.CUSTOMER_NUMBER}</p>
+                  </div>
+                );
+              } catch (e) {
+                return (
+                  <div key={index}>
+                    <p>Error parsing res_data: {item.res_data}</p>
+                  </div>
+                );
+              }
+            })}
+          </>
+        ) : (
+          <p>No customer data to display.</p>
+        )}
+      </div>
+    </div>
+  );
+}
